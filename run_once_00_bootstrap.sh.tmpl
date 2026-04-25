@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+log() {
+  printf '[bootstrap] %s\n' "$*"
+}
+
+has() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+install_homebrew() {
+  if has brew; then
+    return 0
+  fi
+
+  log "Homebrew not found; installing"
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  fi
+}
+
+setup_brew_shellenv() {
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  fi
+}
+
+main() {
+  install_homebrew
+  setup_brew_shellenv
+
+  if has brew; then
+    log "Running brew bundle"
+    brew bundle --file "$HOME/Brewfile"
+  else
+    log "Skipping brew bundle because brew is unavailable"
+  fi
+
+  if has mise; then
+    log "Installing mise-managed tools"
+    mise trust "$HOME/.config/mise/config.toml" >/dev/null 2>&1 || true
+    mise install
+  else
+    log "Skipping mise install because mise is unavailable"
+  fi
+
+  if has fish; then
+    log "Fish installed at $(command -v fish)"
+  fi
+
+  if has nvim; then
+    log "Neovim installed; plugins bootstrap on first launch"
+  fi
+
+  log "Bootstrap complete"
+}
+
+main "$@"

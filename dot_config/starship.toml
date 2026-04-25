@@ -1,0 +1,29 @@
+add_newline = false
+command_timeout = 1000
+format = "$directory$git_branch$git_status$fill$cmd_duration$line_break$character"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold blue)"
+
+[directory]
+truncation_length = 4
+truncate_to_repo = false
+style = "bold blue"
+
+[fill]
+symbol = " "
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = " "
+style = "bold mauve"
+
+[git_status]
+style = "bold yellow"
+
+[cmd_duration]
+min_time = 500
+format = "[$duration]($style)"
+style = "dimmed"

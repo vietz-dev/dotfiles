@@ -1,0 +1,13 @@
+theme = dark:catppuccin-mocha,light:catppuccin-latte
+font-family = "JetBrainsMono Nerd Font"
+font-size = 14
+window-padding-x = 10
+window-padding-y = 10
+background-opacity = 0.95
+background-blur-radius = 20
+macos-titlebar-style = tabs
+macos-option-as-alt = true
+copy-on-select = true
+cursor-style = block
+shell-integration = fish
+confirm-close-surface = false

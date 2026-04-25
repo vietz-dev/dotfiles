@@ -1,0 +1,17 @@
+[user]
+	name = {{ promptStringOnce . "git_name" "Git author name" | quote }}
+	email = {{ promptStringOnce . "git_email" "Git author email" | quote }}
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false
+[push]
+	autoSetupRemote = true
+[core]
+	editor = nvim
+[pager]
+	branch = false
+[rerere]
+	enabled = true
+[merge]
+	conflictstyle = zdiff3
