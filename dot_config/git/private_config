@@ -1,10 +1,10 @@
 [user]
-	name = {{ promptStringOnce . "git_name" "Git author name" | quote }}
-	email = {{ promptStringOnce . "git_email" "Git author email" | quote }}
+	name = Justin Vietz
+	email = justin@vietz.dev
 [init]
 	defaultBranch = main
 [pull]
-	rebase = false
+	rebase = true
 [push]
 	autoSetupRemote = true
 [core]

@@ -17,7 +17,10 @@ require("lazy").setup({
     name = "catppuccin",
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme("catppuccin-mocha")
+      require("catppuccin").setup({
+        flavour = "frappe",
+      })
+      vim.cmd.colorscheme("catppuccin-frappe")
     end,
   },
   {

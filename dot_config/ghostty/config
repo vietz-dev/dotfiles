@@ -1,4 +1,4 @@
-theme = dark:catppuccin-mocha,light:catppuccin-latte
+theme = Catppuccin Frappe
 font-family = "JetBrainsMono Nerd Font"
 font-size = 14
 window-padding-x = 10

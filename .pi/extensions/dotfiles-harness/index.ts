@@ -96,6 +96,10 @@ async function ensureChezmoi(pi: ExtensionAPI, signal?: AbortSignal) {
   }
 }
 
+function chezmoiCommand(ctx: ExtensionContext, args: string): string {
+  return `chezmoi -S ${JSON.stringify(ctx.cwd)} ${args}`;
+}
+
 export default function dotfilesHarness(pi: ExtensionAPI) {
   pi.registerMessageRenderer("dotfiles-harness", (message, options, theme) => {
     let text = theme.fg("accent", "[dotfiles-harness]\n");
@@ -178,7 +182,7 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
     description: "Run chezmoi doctor in this repository",
     handler: async (_args, ctx) => {
       await ensureChezmoi(pi);
-      const result = await pi.exec("bash", ["-lc", `cd ${JSON.stringify(ctx.cwd)} && chezmoi doctor`], { timeout: 30_000 });
+      const result = await pi.exec("bash", ["-lc", chezmoiCommand(ctx, "doctor")], { timeout: 30_000 });
       const rendered = truncateOutput(commandOutput(result.stdout, result.stderr) || "chezmoi doctor completed with no output");
       if (ctx.hasUI) ctx.ui.notify(result.code === 0 ? "chezmoi doctor completed" : "chezmoi doctor reported issues", result.code === 0 ? "info" : "warning");
       pi.sendMessage({
@@ -215,22 +219,22 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
       let command = "";
       switch (params.action) {
         case "status":
-          command = `cd ${JSON.stringify(ctx.cwd)} && chezmoi status`;
+          command = chezmoiCommand(ctx, "status");
           break;
         case "managed-files":
-          command = `cd ${JSON.stringify(ctx.cwd)} && chezmoi managed`;
+          command = chezmoiCommand(ctx, "managed");
           break;
         case "source-path": {
           const inputPath = params.path?.trim();
           if (!inputPath) throw new Error("path is required for action=source-path");
-          command = `cd ${JSON.stringify(ctx.cwd)} && chezmoi source-path ${JSON.stringify(inputPath)}`;
+          command = chezmoiCommand(ctx, `source-path ${JSON.stringify(inputPath)}`);
           break;
         }
         case "diff":
-          command = `cd ${JSON.stringify(ctx.cwd)} && chezmoi diff`;
+          command = chezmoiCommand(ctx, "diff");
           break;
         case "doctor":
-          command = `cd ${JSON.stringify(ctx.cwd)} && chezmoi doctor`;
+          command = chezmoiCommand(ctx, "doctor");
           break;
         case "apply":
           if (!params.confirmApply) {
@@ -248,7 +252,7 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
               };
             }
           }
-          command = `cd ${JSON.stringify(ctx.cwd)} && chezmoi apply`;
+          command = chezmoiCommand(ctx, "apply");
           break;
       }
 

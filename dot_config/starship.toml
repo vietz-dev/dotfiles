@@ -3,14 +3,14 @@ command_timeout = 1000
 format = "$directory$git_branch$git_status$fill$cmd_duration$line_break$character"
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold blue)"
+success_symbol = "[❯](bold fg:#a6d189)"
+error_symbol = "[❯](bold fg:#e78284)"
+vimcmd_symbol = "[❮](bold fg:#8caaee)"
 
 [directory]
 truncation_length = 4
 truncate_to_repo = false
-style = "bold blue"
+style = "bold fg:#8caaee"
 
 [fill]
 symbol = " "
@@ -18,12 +18,12 @@ symbol = " "
 [git_branch]
 format = "[$symbol$branch]($style) "
 symbol = " "
-style = "bold mauve"
+style = "bold fg:#ca9ee6"
 
 [git_status]
-style = "bold yellow"
+style = "bold fg:#e5c890"
 
 [cmd_duration]
 min_time = 500
 format = "[$duration]($style)"
-style = "dimmed"
+style = "fg:#949cbb"
