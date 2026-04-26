@@ -41,6 +41,7 @@ Theme direction:
 
 Key files:
 
+- `Justfile`
 - `Brewfile.tmpl`
 - `run_once_00_bootstrap.sh.tmpl`
 - `run_once_01_set-default-shell.sh.tmpl`
@@ -55,7 +56,7 @@ Key files:
 ### Workflow
 
 1. Make changes in this repo.
-2. Prefer `chezmoi status` / `chezmoi diff` before `chezmoi apply`.
+2. Prefer `just status` / `just diff` before `just apply`.
 3. Target macOS first.
 4. Keep Linux compatibility when it is easy and sensible.
 5. Prefer idempotent bootstrap and configuration flows.
@@ -65,8 +66,8 @@ Key files:
 Recommended workflow for this repository:
 
 ```bash
-chezmoi -S . diff
-chezmoi -S . apply
+just diff
+just apply
 ```
 
 To make this repository the default chezmoi source on this machine:
