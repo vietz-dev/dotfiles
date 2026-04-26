@@ -17,6 +17,49 @@ const HOME = homedir();
 const MAX_OUTPUT_BYTES = 50 * 1024;
 const MAX_OUTPUT_LINES = 2000;
 
+const SENSITIVE_PATH_PATTERNS = [
+  /(^|\/)\.ssh(\/|$)/i,
+  /(^|\/)\.gnupg(\/|$)/i,
+  /(^|\/)\.aws(\/|$)/i,
+  /(^|\/)\.kube(\/|$)/i,
+  /(^|\/)\.docker(\/|$)/i,
+  /(^|\/)\.config\/gh(\/|$)/i,
+  /(^|\/)\.config\/op(\/|$)/i,
+  /(^|\/)\.config\/1password(\/|$)/i,
+  /(^|\/)\.config\/gcloud(\/|$)/i,
+  /(^|\/)\.netrc$/i,
+  /(^|\/)\.npmrc$/i,
+  /(^|\/)\.pypirc$/i,
+  /(^|\/)\.env(\.|$)/i,
+  /(^|\/)id_(rsa|dsa|ecdsa|ed25519)(\.pub)?$/i,
+  /(^|\/)(authorized_keys|known_hosts)$/i,
+  /(^|\/)(credentials|config)\.json$/i,
+];
+
+const SENSITIVE_CONTENT_PATTERNS = [
+  /-----BEGIN (?:RSA|DSA|EC|OPENSSH|PGP) PRIVATE KEY-----/,
+  /(?:^|\n)\s*password\s*=\s*[^\s]+/i,
+  /(?:^|\n)\s*passwd\s*=\s*[^\s]+/i,
+  /(?:^|\n)\s*secret\s*=\s*[^\s]+/i,
+  /(?:^|\n)\s*token\s*=\s*[^\s]+/i,
+  /(?:^|\n)\s*api[_-]?key\s*=\s*[^\s]+/i,
+  /gh[pousr]_[A-Za-z0-9_]{20,}/,
+  /github_pat_[A-Za-z0-9_]{20,}/,
+  /sk-[A-Za-z0-9]{20,}/,
+  /xox[baprs]-[A-Za-z0-9-]{10,}/,
+  /AIza[0-9A-Za-z\-_]{20,}/,
+  /AKIA[0-9A-Z]{16}/,
+  /ASIA[0-9A-Z]{16}/,
+];
+
+const PUBLIC_REPO_SAFETY_GUIDANCE = [
+  "Public repo safety rules:",
+  "- Treat this repository as public. Do not add private information, credentials, tokens, or secret material.",
+  "- Never sync private SSH keys, GPG keys, cloud credentials, auth tokens, or other secrets into this repo.",
+  "- If a user asks to store sensitive files here, refuse and suggest a safe alternative such as 1Password, Keychain, age/sops, or chezmoi templates that read secrets from a secure source at apply time.",
+  "- Prefer committing redacted examples, templates, or documented setup steps instead of real secret values.",
+].join("\n");
+
 function stripAtPrefix(path: string): string {
   return path.startsWith("@") ? path.slice(1) : path;
 }
@@ -86,6 +129,8 @@ function workflowGuidance(cwd: string): string {
     "- When adding a managed file, favor chezmoi naming conventions such as dot_*, private_*, exact_*, and .tmpl where appropriate.",
     "- Prefer dry-run and diff checks before apply operations.",
     "- For package managers and tooling, keep bootstrap steps automatable and idempotent.",
+    "",
+    PUBLIC_REPO_SAFETY_GUIDANCE,
   ].join("\n");
 }
 
@@ -98,6 +143,47 @@ async function ensureChezmoi(pi: ExtensionAPI, signal?: AbortSignal) {
 
 function chezmoiCommand(ctx: ExtensionContext, args: string): string {
   return `chezmoi -S ${JSON.stringify(ctx.cwd)} ${args}`;
+}
+
+function isSensitivePath(path: string): boolean {
+  return SENSITIVE_PATH_PATTERNS.some((pattern) => pattern.test(path));
+}
+
+function containsSensitiveContent(content: string): boolean {
+  return SENSITIVE_CONTENT_PATTERNS.some((pattern) => pattern.test(content));
+}
+
+function extractProposedContent(event: { toolName: string; input?: Record<string, unknown> }): string {
+  if (event.toolName === "write" && typeof event.input?.content === "string") {
+    return event.input.content;
+  }
+
+  if (event.toolName === "edit" && Array.isArray(event.input?.edits)) {
+    return event.input.edits
+      .map((edit) => (edit && typeof edit === "object" && typeof (edit as { newText?: unknown }).newText === "string" ? (edit as { newText: string }).newText : ""))
+      .join("\n");
+  }
+
+  return "";
+}
+
+function suspiciousSensitiveSyncCommand(command: string): boolean {
+  const normalized = command.replace(/\\\n/g, " ");
+  const mentionsSensitiveSource = [
+    /~\/\.ssh\b/,
+    /~\/\.gnupg\b/,
+    /~\/\.aws\b/,
+    /~\/\.kube\b/,
+    /~\/\.docker\b/,
+    /~\/\.netrc\b/,
+    /~\/\.npmrc\b/,
+    /~\/\.pypirc\b/,
+    /~\/\.env(?:\.|\b)/,
+    /id_(rsa|dsa|ecdsa|ed25519)(\.pub)?\b/i,
+  ].some((pattern) => pattern.test(normalized));
+
+  const copiesOrPrints = /\b(cp|mv|rsync|install|cat|tee|base64|tar|zip|scp)\b/.test(normalized);
+  return mentionsSensitiveSource && copiesOrPrints;
 }
 
 export default function dotfilesHarness(pi: ExtensionAPI) {
@@ -118,6 +204,7 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
         "• edit source files in this repo",
         "• use chezmoi status/diff before apply",
         "• target macOS first, keep Linux in mind",
+        "• never commit secrets or private identity material",
       ]);
     }
   });
@@ -136,6 +223,21 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
           reason: `Blocked direct mutation of ${event.input.path}. Edit the chezmoi source file in ${ctx.cwd} instead of mutating files under ${HOME}.`,
         };
       }
+
+      if (isSensitivePath(event.input.path)) {
+        return {
+          block: true,
+          reason: "Blocked writing sensitive material into this public dotfiles repo. Do not commit SSH keys, GPG keys, cloud credentials, tokens, or similar files. Use a safe alternative such as 1Password, Keychain, age/sops, or a chezmoi template that reads secrets from a secure source at apply time.",
+        };
+      }
+
+      const proposedContent = extractProposedContent(event as { toolName: string; input?: Record<string, unknown> });
+      if (proposedContent && containsSensitiveContent(proposedContent)) {
+        return {
+          block: true,
+          reason: "Blocked content that looks like a secret or private key. This repository is public, so commit a redacted template or setup instructions instead of real credentials.",
+        };
+      }
     }
 
     if (event.toolName === "bash" && typeof event.input?.command === "string") {
@@ -145,6 +247,13 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
         return {
           block: true,
           reason: "Blocked a direct shell mutation under ~/. Update the chezmoi source files in this repo, then use chezmoi diff/apply.",
+        };
+      }
+
+      if (suspiciousSensitiveSyncCommand(command)) {
+        return {
+          block: true,
+          reason: "Blocked a command that appears to copy or print sensitive user material such as SSH keys or credentials. This repo is public. Use a secure secret manager or encrypted secret workflow instead, and commit only templates or redacted examples.",
         };
       }
 
@@ -202,6 +311,8 @@ export default function dotfilesHarness(pi: ExtensionAPI) {
     promptGuidelines: [
       "Use chezmoi for repo-aware dotfiles inspection and apply flows instead of mutating live files under ~/. directly.",
       "Use chezmoi with action status or diff before chezmoi action apply unless the user explicitly asks to apply changes.",
+      "Treat this repo as public: do not add secrets, private keys, tokens, or personal credentials.",
+      "If asked to store sensitive files such as SSH keys, refuse and suggest a secure alternative like 1Password, Keychain, age/sops, or secret-backed chezmoi templates.",
     ],
     parameters: Type.Object({
       action: StringEnum(["status", "managed-files", "source-path", "diff", "doctor", "apply"] as const),
