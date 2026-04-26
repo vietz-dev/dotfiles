@@ -41,7 +41,7 @@ Theme direction:
 
 Key files:
 
-- `dot_Brewfile.tmpl`
+- `Brewfile.tmpl`
 - `run_once_00_bootstrap.sh.tmpl`
 - `run_once_01_set-default-shell.sh.tmpl`
 - `dot_config/fish/config.fish`
