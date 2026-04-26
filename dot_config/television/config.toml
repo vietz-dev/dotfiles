@@ -1,0 +1,48 @@
+shell = "fish"
+history_size = 200
+global_history = false
+
+[ui]
+theme = "catppuccin"
+
+[ui.input_bar]
+position = "top"
+prompt = ">"
+border_type = "rounded"
+
+[ui.status_bar]
+separator_open = ""
+separator_close = ""
+hidden = false
+
+[ui.results_panel]
+border_type = "rounded"
+
+[ui.preview_panel]
+size = 50
+scrollbar = true
+border_type = "rounded"
+hidden = false
+
+[ui.help_panel]
+show_categories = true
+hidden = true
+
+[ui.remote_control]
+show_channel_descriptions = true
+sort_alphabetically = true
+
+[shell_integration]
+fallback_channel = "files"
+
+[shell_integration.channel_triggers]
+"dirs" = ["cd", "ls", "rmdir", "z", "zi"]
+"files" = ["cat", "less", "head", "tail", "vim", "nvim", "bat", "cp", "mv", "rm", "touch"]
+"git-branch" = ["git checkout", "git switch", "git branch", "git merge", "git rebase", "git pull", "git push"]
+"git-log" = ["git log", "git show"]
+"git-diff" = ["git add", "git restore"]
+"git-repos" = ["nvim", "code", "hx", "git clone"]
+
+[shell_integration.keybindings]
+smart_autocomplete = "ctrl-t"
+command_history = "ctrl-g"

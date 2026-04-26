@@ -55,6 +55,16 @@ if type -q zoxide
     zoxide init fish --cmd cd | source
 end
 
+if status is-interactive
+    if type -q tv
+        tv init fish | source
+    end
+
+    if type -q atuin
+        atuin init fish --disable-up-arrow | source
+    end
+end
+
 alias vim='nvim'
 alias vi='nvim'
 alias ls='eza --group-directories-first'
