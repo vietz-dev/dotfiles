@@ -57,9 +57,10 @@ Key files:
 
 1. Make changes in this repo.
 2. Prefer `just status` / `just diff` before `just apply`.
-3. Target macOS first.
-4. Keep Linux compatibility when it is easy and sensible.
-5. Prefer idempotent bootstrap and configuration flows.
+3. After live edits to global mise config (for example `mise use -g kubie`), run `just sync` to import `~/.config/mise/config.toml` back into the repo.
+4. Target macOS first.
+5. Keep Linux compatibility when it is easy and sensible.
+6. Prefer idempotent bootstrap and configuration flows.
 
 ### Apply
 
@@ -68,6 +69,14 @@ Recommended workflow for this repository:
 ```bash
 just diff
 just apply
+```
+
+When adding or changing global mise tools in the normal way:
+
+```bash
+mise use -g kubie
+just sync
+git diff -- dot_config/mise/config.toml
 ```
 
 To make this repository the default chezmoi source on this machine:

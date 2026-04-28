@@ -44,6 +44,12 @@ apply:
 # Preview then apply changes
 update: diff apply
 
+# Sync known live-managed files back into the repo source.
+# Use this after commands like `mise use -g ...` that modify ~/.config directly.
+sync:
+    chezmoi -S . re-add "$HOME/.config/mise/config.toml"
+    git status --short -- dot_config/mise/config.toml
+
 # Show git status for the repo itself
 repo-status:
     git status --short
