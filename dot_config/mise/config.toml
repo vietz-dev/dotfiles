@@ -10,6 +10,9 @@ go = "1.24"
 lua = "5.1"
 pnpm = "latest"
 kubie = "latest"
+uv = "latest"
+flux2 = "latest"
+helm = "latest"
 
 [env]
 _.file = ".env"
