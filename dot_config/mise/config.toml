@@ -13,6 +13,7 @@ kubie = "latest"
 uv = "latest"
 flux2 = "latest"
 helm = "latest"
+bun = "latest"
 
 [env]
 _.file = ".env"
