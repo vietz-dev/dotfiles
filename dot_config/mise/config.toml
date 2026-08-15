@@ -14,6 +14,11 @@ uv = "latest"
 flux2 = "latest"
 helm = "latest"
 bun = "latest"
+flyctl = "latest"
+talosctl = "latest"
+gh = "latest"
+claude = "latest"
+openbao = { version = "latest", exe = "bao" }
 
 [env]
 _.file = ".env"
