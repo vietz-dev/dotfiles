@@ -19,6 +19,8 @@ talosctl = "latest"
 gh = "latest"
 claude = "latest"
 openbao = { version = "latest", exe = "bao" }
+fnox = "latest"
+age = "latest"
 
 [env]
 _.file = ".env"
