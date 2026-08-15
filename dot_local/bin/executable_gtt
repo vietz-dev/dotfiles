@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+gtt — Ghostty tab helper for Television
+
+Usage:
+  gtt list
+  gtt focus <window_id> <tab_id>
+  gtt preview <window_id> <tab_id> <marker> <title> <working_dir>
+EOF
+}
+
+require_macos() {
+    if [[ "$(uname)" != "Darwin" ]]; then
+        echo "gtt: macOS is required" >&2
+        exit 1
+    fi
+}
+
+list_tabs() {
+    require_macos
+
+    osascript <<'APPLESCRIPT' | awk -F $'\x1f' -v home="$HOME" 'NF >= 5 {
+        win = $1
+        tab = $2
+        sel = $3
+        title = $4
+        wd = $5
+
+        gsub(/[\t\r\n]+/, " ", title)
+        gsub(/[\t\r\n]+/, " ", wd)
+
+        if (home != "" && index(wd, home) == 1) {
+            wd = "~" substr(wd, length(home) + 1)
+        }
+
+        marker = (sel == "true") ? "▸" : " "
+        print win "\t" tab "\t" marker "\t" title "\t" wd
+    }'
+ tell application "Ghostty"
+     set sep to ASCII character 31
+     set output to ""
+     repeat with w in every window
+         set winId to id of w
+         repeat with t in every tab of w
+             set tabId to id of t
+             set isSelected to selected of t
+             set tabName to name of t
+             set term to focused terminal of t
+             set wd to working directory of term
+             set output to output & winId & sep & tabId & sep & isSelected & sep & tabName & sep & wd & linefeed
+         end repeat
+     end repeat
+     return output
+ end tell
+APPLESCRIPT
+}
+
+focus_tab() {
+    require_macos
+
+    local window_id="${1:-}"
+    local tab_id="${2:-}"
+
+    if [[ -z "$window_id" || -z "$tab_id" ]]; then
+        usage >&2
+        exit 1
+    fi
+
+    osascript <<APPLESCRIPT
+ tell application "Ghostty"
+     activate
+     set w to first window whose id is "$window_id"
+     set t to first tab of w whose id is "$tab_id"
+     select tab t
+     activate window w
+ end tell
+APPLESCRIPT
+}
+
+preview_tab() {
+    require_macos
+
+    local window_id="${1:-}"
+    local tab_id="${2:-}"
+
+    if [[ -z "$window_id" || -z "$tab_id" ]]; then
+        usage >&2
+        exit 1
+    fi
+
+    osascript <<APPLESCRIPT
+ tell application "Ghostty"
+     set w to first window whose id is "$window_id"
+     set t to first tab of w whose id is "$tab_id"
+     set term to focused terminal of t
+     set wd to working directory of term
+     set isSelected to selected of t
+     set tabName to name of t
+     return "Title: " & tabName & linefeed & ¬
+            "Directory: " & wd & linefeed & ¬
+            "Window ID: " & id of w & linefeed & ¬
+            "Tab ID: " & id of t & linefeed & ¬
+            "Active in window: " & isSelected & linefeed & linefeed & ¬
+            "Press Enter to switch to this tab."
+ end tell
+APPLESCRIPT
+}
+
+case "${1:-}" in
+    list)
+        list_tabs
+        ;;
+    focus)
+        shift
+        focus_tab "$@"
+        ;;
+    preview)
+        shift
+        preview_tab "$@"
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 1
+        ;;
+esac

@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+zjt — Zellij session helper for Television
+
+Usage:
+  zjt list
+  zjt preview <session>
+  zjt switch <session>
+  zjt rename <session> [new_name]
+  zjt kill <session>
+  zjt delete <session>
+EOF
+}
+
+require_zellij() {
+  command -v zellij >/dev/null 2>&1 || {
+    echo "zjt: zellij is required" >&2
+    exit 1
+  }
+}
+
+list_sessions() {
+  require_zellij
+
+  zellij list-sessions --no-formatting | awk '
+    {
+      raw = $0
+      name = $1
+      if (name == "") next
+
+      marker = " "
+      status = "active"
+      low = tolower(raw)
+
+      if (low ~ /current/) {
+        marker = "*"
+        status = "current"
+      } else if (low ~ /exited/) {
+        marker = "x"
+        status = "exited"
+      }
+
+      print name "\t" marker "\t" status "\t" raw
+    }
+  '
+}
+
+preview_session() {
+  require_zellij
+  local session="${1:-}"
+  [[ -n "$session" ]] || { usage >&2; exit 1; }
+
+  local raw
+  raw="$(zellij list-sessions --no-formatting | awk -v s="$session" '$1 == s { print; found=1 } END { if (!found) exit 1 }' 2>/dev/null || true)"
+
+  if [[ -z "$raw" ]]; then
+    echo "Session: $session"
+    echo
+    echo "Session not found in current list."
+    return 0
+  fi
+
+  echo "Session: $session"
+  echo "Details: $raw"
+  echo
+  echo "Enter: switch/attach"
+  echo "Ctrl-r: rename"
+  echo "Ctrl-k: kill"
+  echo "Ctrl-d: delete"
+}
+
+switch_session() {
+  require_zellij
+  local session="${1:-}"
+  [[ -n "$session" ]] || { usage >&2; exit 1; }
+
+  if [[ -n "${ZELLIJ:-}" ]]; then
+    exec zellij action switch-session "$session"
+  else
+    exec zellij attach "$session" -c
+  fi
+}
+
+rename_session() {
+  require_zellij
+  local old_name="${1:-}"
+  local new_name="${2:-}"
+  [[ -n "$old_name" ]] || { usage >&2; exit 1; }
+
+  if [[ -z "$new_name" ]]; then
+    printf "Rename session '%s' to: " "$old_name" >&2
+    read -r new_name
+  fi
+
+  [[ -n "$new_name" ]] || {
+    echo "zjt: rename cancelled (empty name)" >&2
+    exit 1
+  }
+
+  if [[ -n "${ZELLIJ:-}" && "${ZELLIJ_SESSION_NAME:-}" == "$old_name" ]]; then
+    exec zellij action rename-session "$new_name"
+  fi
+
+  echo "zjt: rename works only from inside the target session." >&2
+  echo "Attach/switch to '$old_name' first, then run rename." >&2
+  exit 1
+}
+
+kill_session() {
+  require_zellij
+  local session="${1:-}"
+  [[ -n "$session" ]] || { usage >&2; exit 1; }
+  exec zellij kill-session "$session"
+}
+
+delete_session() {
+  require_zellij
+  local session="${1:-}"
+  [[ -n "$session" ]] || { usage >&2; exit 1; }
+  exec zellij delete-session "$session"
+}
+
+case "${1:-}" in
+  list)
+    list_sessions
+    ;;
+  preview)
+    shift
+    preview_session "$@"
+    ;;
+  switch)
+    shift
+    switch_session "$@"
+    ;;
+  rename)
+    shift
+    rename_session "$@"
+    ;;
+  kill)
+    shift
+    kill_session "$@"
+    ;;
+  delete)
+    shift
+    delete_session "$@"
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 1
+    ;;
+esac
