@@ -21,6 +21,8 @@ claude = "latest"
 openbao = { version = "latest", exe = "bao" }
 fnox = "latest"
 age = "latest"
+nub = { version = "latest", allow_builds = ["@nubjs/nub"] }
+aube = "latest"
 
 [env]
 _.file = ".env"
