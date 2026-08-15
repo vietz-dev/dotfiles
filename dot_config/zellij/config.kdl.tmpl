@@ -34,14 +34,15 @@ ui {
 keybinds clear-defaults=true {
     normal {
         bind "Ctrl g" { SwitchToMode "locked"; }
-        bind "Ctrl p" { SwitchToMode "pane"; }
-        bind "Ctrl t" { SwitchToMode "tab"; }
+        bind "Ctrl w" { SwitchToMode "pane"; }
+        bind "Ctrl b" { SwitchToMode "tab"; }
         bind "Ctrl n" { NewPane; }
-        bind "Ctrl w" { CloseFocus; }
+        bind "Ctrl q" { CloseFocus; }
         bind "Alt h" { MoveFocus "Left"; }
         bind "Alt l" { MoveFocus "Right"; }
         bind "Alt j" { MoveFocus "Down"; }
         bind "Alt k" { MoveFocus "Up"; }
+        bind "Alt t" { Run "tv" { floating true; close_on_exit true; }; }
     }
     locked {
         bind "Ctrl g" { SwitchToMode "normal"; }

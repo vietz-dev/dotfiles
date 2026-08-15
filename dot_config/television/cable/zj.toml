@@ -1,0 +1,39 @@
+[metadata]
+name = "zj"
+description = "Manage Zellij sessions"
+requirements = ["zellij", "zjt"]
+
+[source]
+command = "~/.local/bin/zjt list"
+display = "{split:\t:1} {split:\t:0}  ({split:\t:2})"
+output = "{split:\t:0}"
+watch = 2
+
+[preview]
+command = "~/.local/bin/zjt preview '{}'"
+
+[keybindings]
+enter = "actions:switch"
+ctrl-r = "actions:rename"
+ctrl-k = "actions:kill"
+ctrl-d = "actions:delete"
+
+[actions.switch]
+description = "Switch/attach to selected session"
+command = "~/.local/bin/zjt switch '{}'"
+mode = "execute"
+
+[actions.rename]
+description = "Rename selected session"
+command = "~/.local/bin/zjt rename '{}'"
+mode = "execute"
+
+[actions.kill]
+description = "Kill selected session"
+command = "~/.local/bin/zjt kill '{}'"
+mode = "fork"
+
+[actions.delete]
+description = "Delete selected session"
+command = "~/.local/bin/zjt delete '{}'"
+mode = "fork"

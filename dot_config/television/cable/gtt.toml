@@ -1,0 +1,21 @@
+[metadata]
+name = "gtt"
+description = "Switch Ghostty tabs on macOS"
+requirements = ["ghostty"]
+
+[source]
+command = "~/.local/bin/gtt list"
+display = "{split:\t:2} {split:\t:3}  {split:\t:4}"
+output = "{split:\t:1}"
+watch = 2
+
+[preview]
+command = "~/.local/bin/gtt preview '{split:\t:0}' '{split:\t:1}'"
+
+[keybindings]
+enter = "actions:focus"
+
+[actions.focus]
+description = "Focus selected Ghostty tab"
+command = "~/.local/bin/gtt focus '{split:\t:0}' '{split:\t:1}'"
+mode = "execute"
