@@ -23,6 +23,8 @@ fnox = "latest"
 age = "latest"
 nub = { version = "latest", allow_builds = ["@nubjs/nub"] }
 aube = "latest"
+pulumi = "latest"
+"pipx:semble" = "latest"
 
 [env]
 _.file = ".env"
