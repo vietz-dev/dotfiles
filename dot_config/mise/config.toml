@@ -28,3 +28,23 @@ pulumi = "latest"
 
 [env]
 _.file = ".env"
+
+[shell_alias]
+# kubectl
+k = "kubectl"
+kg = "kubectl get"
+kd = "kubectl describe"
+kl = "kubectl logs"
+kaf = "kubectl apply -f"
+kx = "kubectl exec -it"
+
+# git
+g = "git"
+gs = "git status -sb"
+ga = "git add"
+gc = "git commit"
+gco = "git checkout"
+gd = "git diff"
+gp = "git push"
+gl = "git pull"
+glg = "git log --oneline --graph --decorate -20"
