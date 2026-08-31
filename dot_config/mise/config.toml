@@ -4,10 +4,10 @@ experimental = true
 
 [tools]
 node = "lts"
-python = "3.12"
+python = "3.14"
 rust = "stable"
-go = "1.24"
-lua = "5.1"
+go = "1.27"
+lua = "5.5"
 pnpm = "latest"
 kubie = "latest"
 uv = "latest"
@@ -25,6 +25,10 @@ nub = { version = "latest", allow_builds = ["@nubjs/nub"] }
 aube = "latest"
 pulumi = "latest"
 "pipx:semble" = "latest"
+k9s = "latest"
+azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
+"github:vietz-dev/azie" = "0.0.1-pre.5028eeb"
+"github:brocode/fblog" = "latest"
 
 [env]
 _.file = ".env"
