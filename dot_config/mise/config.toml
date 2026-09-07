@@ -29,6 +29,8 @@ k9s = "latest"
 azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
 "github:vietz-dev/azie" = "0.0.1-pre.5028eeb"
 "github:brocode/fblog" = "latest"
+1password = "latest"
+"github:plannotator/envit" = "latest"
 
 [env]
 _.file = ".env"
