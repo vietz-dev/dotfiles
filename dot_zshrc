@@ -1,0 +1,8 @@
+# Keep hooks and line-editor integrations out of noninteractive shells.
+[[ -o interactive ]] || return
+
+# Explicit load order: environment first, completion before tool integrations.
+for _zsh_package in env history completion aliases functions theme integrations; do
+    source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/${_zsh_package}.zsh"
+done
+unset _zsh_package

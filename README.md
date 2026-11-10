@@ -27,7 +27,7 @@ Because it is inside `.pi/extensions/`, pi auto-discovers it whenever pi is star
 This repo now bootstraps:
 
 - Ghostty
-- fish
+- Zsh (Fish config remains as an optional fallback)
 - zellij
 - starship
 - Homebrew via `~/Brewfile`
@@ -37,7 +37,7 @@ This repo now bootstraps:
 
 Theme direction:
 
-- Catppuccin Frappe across Ghostty, fish, starship, zellij, Neovim, and bat
+- Catppuccin Frappe across Ghostty, starship, zellij, Neovim, and bat
 
 Key files:
 
@@ -45,7 +45,8 @@ Key files:
 - `Brewfile.tmpl`
 - `run_once_00_bootstrap.sh.tmpl`
 - `run_once_01_set-default-shell.sh.tmpl`
-- `dot_config/fish/config.fish`
+- `dot_zprofile`, `dot_zshrc`, and `dot_config/zsh/env.zsh`
+- `dot_config/fish/` (optional fallback)
 - `dot_config/ghostty/config`
 - `dot_config/zellij/config.kdl.tmpl`
 - `dot_config/starship.toml`
@@ -95,7 +96,33 @@ The bootstrap script will:
 1. install Homebrew if needed
 2. run `brew bundle --file "$HOME/Brewfile"`
 3. run `mise install`
-4. print fish login-shell guidance if needed
+4. print Zsh login-shell guidance without changing your account
+
+### Switching an existing machine to Zsh
+
+After reviewing and applying the shell configuration, run `chsh -s /bin/zsh`
+on macOS, then open a new login session. The `run_once` guidance script may
+already have run on an existing machine, so applying these files alone does
+not change your account login shell. On Linux, use `command -v zsh` to find
+the installed path and check that it is in `/etc/shells` before passing it to
+`chsh -s`.
+
+Ghostty explicitly launches Zsh, and Zellij and Television use Zsh too.
+`~/.zprofile` initializes Homebrew for login shells; shared environment and
+paths are loaded by both the profile and `~/.zshrc`, so non-login panes work.
+Interactive shells initialize completion before mise, Starship, Television,
+Atuin, and zoxide. Television uses Ctrl-T and Atuin owns Ctrl-R; the up arrow
+keeps normal history navigation. Azure shortcuts from Fish are Zsh aliases.
+
+Zsh packages live in `dot_config/zsh/`: `env.zsh`, `history.zsh`,
+`completion.zsh`, `aliases.zsh`, `functions.zsh`, `theme.zsh`, and
+`integrations.zsh`. `dot_zshrc` sources them in an explicit order. Keep
+packages flat while they are small; if aliases grow, split them into files
+such as `aliases/k8s.zsh` and `aliases/azcli.zsh`, sourced by `aliases.zsh`.
+`just check` validates packages recursively.
+
+Fish configuration is retained for manual fallback (`fish` if installed).
+Bootstrap no longer installs Fish, and this migration does not uninstall it.
 
 ### Notes
 
