@@ -16,7 +16,7 @@ brew:
 bootstrap:
     just brew
     if command -v mise >/dev/null 2>&1; then mise trust "$HOME/.config/mise/config.toml" >/dev/null 2>&1 || true; mise install; fi
-    if command -v fish >/dev/null 2>&1; then echo "[bootstrap] Fish installed at $(command -v fish)"; fi
+    if command -v zsh >/dev/null 2>&1; then echo "[bootstrap] Zsh installed at $(command -v zsh)"; fi
     if command -v nvim >/dev/null 2>&1; then echo "[bootstrap] Neovim installed; plugins bootstrap on first launch"; fi
     echo "[bootstrap] Bootstrap complete"
 
@@ -56,5 +56,7 @@ repo-status:
 
 # Format and validate common config files when tools are available
 check:
+    zsh -c 'for config in dot_zprofile dot_zshrc dot_config/zsh/**/*.zsh; do zsh -n "$config" || exit; done'
+    for script in run_once_00_bootstrap.sh.tmpl run_once_01_set-default-shell.sh.tmpl; do bash -n "$script" || exit; done
     if command -v fish >/dev/null 2>&1; then fish --no-execute dot_config/fish/config.fish; fi
     if command -v taplo >/dev/null 2>&1; then taplo fmt --check dot_config/television/config.toml dot_config/atuin/config.toml; fi

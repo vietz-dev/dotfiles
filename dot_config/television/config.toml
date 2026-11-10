@@ -1,4 +1,4 @@
-shell = "fish"
+shell = "zsh"
 history_size = 200
 global_history = false
 

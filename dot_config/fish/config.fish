@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+fish_add_path --append --path "$HOME/.docker/bin"
+# End of Docker Desktop section.
+
 set -g fish_greeting
 set -gx EDITOR nvim
 set -gx VISUAL nvim
@@ -78,3 +82,10 @@ function mkcd
     mkdir -p $argv[1]
     and cd $argv[1]
 end
+
+# pnpm
+set -gx PNPM_HOME "/Users/justinv/Library/pnpm"
+if not string match -q -- "$PNPM_HOME/bin" $PATH
+  set -gx PATH "$PNPM_HOME/bin" $PATH
+end
+# pnpm end

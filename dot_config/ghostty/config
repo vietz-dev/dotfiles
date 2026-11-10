@@ -9,5 +9,6 @@ macos-titlebar-style = tabs
 macos-option-as-alt = true
 copy-on-select = true
 cursor-style = block
-shell-integration = fish
+shell-integration = zsh
+command = /usr/bin/env zsh
 confirm-close-surface = false
